@@ -714,21 +714,27 @@ body.dark-mode .custom-form textarea {
     .kanote-corner { width: 80px; height: 80px; }
 }
 
-/* [ထပ်ဖြည့်ထားသောအပိုင်း] Admin နှင့် Delete ခလုတ်များအတွက် CSS */
+/* [ထပ်ဖြည့်ထားသောအပိုင်း] ဖုန်းရော ကွန်ပျူတာပါ အဆင်ပြေစေမည့် Admin နှင့် Delete ခလုတ်များ */
 .admin-controls-bar {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
     margin-bottom: 12px;
+    flex-wrap: wrap; /* ဖုန်းစခရင် ငယ်လျှင် အောက်သို့ အလိုအလျောက် ဆင်းပေးသည် */
 }
 
 .admin-btn, .admin-clear-btn {
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: bold;
     font-family: inherit;
     cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.admin-btn:active, .admin-clear-btn:active {
+    transform: scale(0.95); /* ဖုန်းပေါ်တွင် ထိလိုက်စဉ် Touch Effect ရစေရန် */
 }
 
 .admin-btn {
@@ -746,14 +752,57 @@ body.dark-mode .custom-form textarea {
 .wish-actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.like-btn, .delete-wish-btn {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.like-btn {
+    background: transparent;
+    border: 1.5px solid var(--gold-main);
+    color: inherit;
 }
 
 .delete-wish-btn {
     background: #d9534f;
     color: #fff;
     border: none;
-    padding: 6px 10px;
-    border-radius: 20px;
+}
+
+/* ဖုန်းစခရင်ငယ်များ (Mobile Screens) အတွက် သီးသန့် အလှဆင်ခြင်း */
+@media (max-width: 520px) {
+    .admin-controls-bar {
+        justify-content: center; /* ဖုန်းတွင် ခလုတ်များကို အလယ်ဗဟို ပို့ပေးမည် */
+        margin-bottom: 15px;
+    }
+    
+    .admin-btn, .admin-clear-btn {
+        width: 100%; /* ဖုန်းဖြင့် ဝင်လျှင် ခလုတ်က အကျယ်အပြည့် ပါလာမည်ဖြစ်၍ နှိပ်ရလွယ်ကူသည် */
+        text-align: center;
+        padding: 10px;
+    }
+
+    .wish-item {
+        flex-direction: column; /* ဖုန်းစခရင်သေးလျှင် ဆုတောင်းစာက အပေါ်၊ Like နဲ့ Delete ခလုတ်က အောက်သို့ ဆင်းမည် */
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .wish-actions {
+        width: 100%;
+        justify-content: flex-end; /* ဖုန်းတွင် ခလုတ်များကို ညာဘက်သို့ ကပ်ပေးမည် */
+    }
+}
     cursor: pointer;
 }
