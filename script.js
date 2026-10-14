@@ -156,16 +156,15 @@ document.getElementById('langToggle').addEventListener('click', () => {
     });
 });
 
-// ================= ၇။ REAL-TIME ဆုတောင်းစာနှင့် LIKE REACTION (+ ADMIN DELETE) =================
+// ================= ၇။ REAL-TIME ဆုတောင်းစာ၊ LIKE နှင့် ADMIN ဖျက်သည့်စနစ် =================
 const wishesListEl = document.getElementById('wishes-list');
 const wishForm = document.getElementById('wish-form');
+const adminToggleBtn = document.getElementById('adminToggleBtn');
+const clearAllWishesBtn = document.getElementById('clearAllWishesBtn');
 
-// [ထပ်ဖြည့်ထားသောအပိုင်း] Admin Security Key စနစ်
 const ADMIN_KEY = "sirhtetishandsome";
 let isAdmin = false;
 let currentRenderedWishes = [];
-const adminToggleBtn = document.getElementById('adminToggleBtn');
-const clearAllWishesBtn = document.getElementById('clearAllWishesBtn');
 
 const defaultWishes = [
     { id: 'w1', name: 'Tr. May', message: 'သီတင်းကျွတ်အခါသမယမှာ ကျောင်းသား/သူများအားလုံး ပျော်ရွှင်ချမ်းမြေ့ကြပါစေ။', likes: 12 },
@@ -179,15 +178,16 @@ if (adminToggleBtn) {
             if (key === ADMIN_KEY) {
                 isAdmin = true;
                 adminToggleBtn.textContent = "🔓 Exit Admin";
-                clearAllWishesBtn.classList.remove('hidden');
+                if (clearAllWishesBtn) clearAllWishesBtn.classList.remove('hidden');
                 renderWishes(currentRenderedWishes);
+                alert("✅ Admin Mode ပွင့်သွားပါပြီ။");
             } else if (key !== null) {
                 alert("❌ Security Key မှားယွင်းနေပါသည်!");
             }
         } else {
             isAdmin = false;
             adminToggleBtn.textContent = "🔒 Admin Mode";
-            clearAllWishesBtn.classList.add('hidden');
+            if (clearAllWishesBtn) clearAllWishesBtn.classList.add('hidden');
             renderWishes(currentRenderedWishes);
         }
     });
@@ -196,7 +196,7 @@ if (adminToggleBtn) {
 if (clearAllWishesBtn) {
     clearAllWishesBtn.addEventListener('click', () => {
         if (!isAdmin) return;
-        const key = prompt("အားလုံးဖျက်ရန် Security Key ကို ထပ်မံရိုက်ထည့်ပါ:");
+        const key = prompt("ဆုတောင်းစာ အားလုံးကို ဖျက်ရန် Security Key ကို ထပ်မံရိုက်ထည့်ပါ:");
         if (key === ADMIN_KEY) {
             if (isFirebaseConfigured && wishesRef) {
                 remove(wishesRef);
@@ -225,12 +225,15 @@ function renderWishes(wishesArray) {
                 <button class="like-btn" data-id="${item.id}">
                     ❤️ <span>${item.likes || 0}</span>
                 </button>
-                ${isAdmin ? `<button class="delete-wish-btn" data-id="${item.id}">🗑️</button>` : ''}
+                ${isAdmin ? `<button class="delete-wish-btn" data-id="${item.id}">🗑️ ဖျက်မည်</button>` : ''}
             </div>
         `;
         div.querySelector('.like-btn').addEventListener('click', () => handleLike(item.id));
         if (isAdmin) {
-            div.querySelector('.delete-wish-btn').addEventListener('click', () => handleDelete(item.id));
+            const delBtn = div.querySelector('.delete-wish-btn');
+            if (delBtn) {
+                delBtn.addEventListener('click', () => handleDelete(item.id));
+            }
         }
         wishesListEl.prepend(div);
     });
@@ -292,7 +295,6 @@ function handleLike(id) {
     }
 }
 
-// [ထပ်ဖြည့်ထားသောအပိုင်း] တစ်ခုချင်းစီ ဖျက်သည့် Function
 function handleDelete(id) {
     if (!isAdmin) return;
     if (!confirm("ဒီဆုတောင်းစာကို ဖျက်မှာ သေချာပါသလား?")) return;
