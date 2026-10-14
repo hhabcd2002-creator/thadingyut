@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, push, onValue, runTransaction, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // =========================================================================
 // ၁။ GOOGLE SHEET (Register) ချိတ်ဆက်ရန် URL (ထည့်သွင်းပြီးသား)
@@ -156,16 +156,62 @@ document.getElementById('langToggle').addEventListener('click', () => {
     });
 });
 
-// ================= ၇။ REAL-TIME ဆုတောင်းစာနှင့် LIKE REACTION =================
+// ================= ၇။ REAL-TIME ဆုတောင်းစာနှင့် LIKE REACTION (+ ADMIN DELETE) =================
 const wishesListEl = document.getElementById('wishes-list');
 const wishForm = document.getElementById('wish-form');
+
+// [ထပ်ဖြည့်ထားသောအပိုင်း] Admin Security Key စနစ်
+const ADMIN_KEY = "sirhtetishandsome";
+let isAdmin = false;
+let currentRenderedWishes = [];
+const adminToggleBtn = document.getElementById('adminToggleBtn');
+const clearAllWishesBtn = document.getElementById('clearAllWishesBtn');
 
 const defaultWishes = [
     { id: 'w1', name: 'Tr. May', message: 'သီတင်းကျွတ်အခါသမယမှာ ကျောင်းသား/သူများအားလုံး ပျော်ရွှင်ချမ်းမြေ့ကြပါစေ။', likes: 12 },
     { id: 'w2', name: 'Aung Aung', message: 'Happy Thadingyut to all teachers and friends! See you at the Fun & Fair!', likes: 8 }
 ];
 
+if (adminToggleBtn) {
+    adminToggleBtn.addEventListener('click', () => {
+        if (!isAdmin) {
+            const key = prompt("Admin Security Key ရိုက်ထည့်ပါ:");
+            if (key === ADMIN_KEY) {
+                isAdmin = true;
+                adminToggleBtn.textContent = "🔓 Exit Admin";
+                clearAllWishesBtn.classList.remove('hidden');
+                renderWishes(currentRenderedWishes);
+            } else if (key !== null) {
+                alert("❌ Security Key မှားယွင်းနေပါသည်!");
+            }
+        } else {
+            isAdmin = false;
+            adminToggleBtn.textContent = "🔒 Admin Mode";
+            clearAllWishesBtn.classList.add('hidden');
+            renderWishes(currentRenderedWishes);
+        }
+    });
+}
+
+if (clearAllWishesBtn) {
+    clearAllWishesBtn.addEventListener('click', () => {
+        if (!isAdmin) return;
+        const key = prompt("အားလုံးဖျက်ရန် Security Key ကို ထပ်မံရိုက်ထည့်ပါ:");
+        if (key === ADMIN_KEY) {
+            if (isFirebaseConfigured && wishesRef) {
+                remove(wishesRef);
+            } else {
+                localStorage.setItem('thadingyut_wishes', JSON.stringify([]));
+                renderWishes([]);
+            }
+        } else if (key !== null) {
+            alert("❌ Security Key မှားယွင်းနေပါသည်!");
+        }
+    });
+}
+
 function renderWishes(wishesArray) {
+    currentRenderedWishes = wishesArray;
     wishesListEl.innerHTML = '';
     wishesArray.forEach(item => {
         const div = document.createElement('div');
@@ -175,11 +221,17 @@ function renderWishes(wishesArray) {
                 <h4>🪔 ${escapeHtml(item.name)}</h4>
                 <p>${escapeHtml(item.message)}</p>
             </div>
-            <button class="like-btn" data-id="${item.id}">
-                ❤️ <span>${item.likes || 0}</span>
-            </button>
+            <div class="wish-actions">
+                <button class="like-btn" data-id="${item.id}">
+                    ❤️ <span>${item.likes || 0}</span>
+                </button>
+                ${isAdmin ? `<button class="delete-wish-btn" data-id="${item.id}">🗑️</button>` : ''}
+            </div>
         `;
         div.querySelector('.like-btn').addEventListener('click', () => handleLike(item.id));
+        if (isAdmin) {
+            div.querySelector('.delete-wish-btn').addEventListener('click', () => handleDelete(item.id));
+        }
         wishesListEl.prepend(div);
     });
 }
@@ -237,6 +289,22 @@ function handleLike(id) {
             localStorage.setItem('thadingyut_wishes', JSON.stringify(localWishes));
             renderWishes(localWishes);
         }
+    }
+}
+
+// [ထပ်ဖြည့်ထားသောအပိုင်း] တစ်ခုချင်းစီ ဖျက်သည့် Function
+function handleDelete(id) {
+    if (!isAdmin) return;
+    if (!confirm("ဒီဆုတောင်းစာကို ဖျက်မှာ သေချာပါသလား?")) return;
+
+    if (isFirebaseConfigured && db) {
+        const itemRef = ref(db, `thadingyut_wishes/${id}`);
+        remove(itemRef);
+    } else {
+        let localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
+        localWishes = localWishes.filter(w => w.id !== id);
+        localStorage.setItem('thadingyut_wishes', JSON.stringify(localWishes));
+        renderWishes(localWishes);
     }
 }
 
