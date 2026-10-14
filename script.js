@@ -1,5 +1,5 @@
 // ================= GOOGLE SHEET WEB APP URL =================
-const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzHUiTkVAwBXE7w9krTg-zqVTff1uqzO3mOpxDhXq_quOCOpFTDGIxCfDrpGIFF3jSufw/exec";
+const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLt4caejciZrTm1btGKHdmIWRLHqCrpHmfiSYwJCDbIMGn0slJhqy1c3b_FS7BHbqVFA/exec";
 
 // ================= ၃။ အဖွင့် စာအိတ် (ENVELOPE) ဖွင့်ခြင်း =================
 const envelopeWrapper = document.getElementById('envelopeWrapper');
@@ -69,6 +69,9 @@ const translations = {
         venue: "JEWELS FUTURE INTERNATIONAL SCHOOL VENUE",
         look_forward: "WE LOOK FORWARD TO CELEBRATE THIS SPECIAL DAY WITH YOU",
         wishes_heading: "✨ Thadingyut Wishes & Reactions",
+        admin_login_btn: "🔒 Admin Mode",
+        admin_logout_btn: "🔓 Exit Admin",
+        admin_clear_btn: "🗑️ Clear All",
         write_wish_title: "Write a Wish",
         ph_name: "Your Name",
         ph_wish: "Write your Thadingyut wish...",
@@ -86,7 +89,7 @@ const translations = {
         cordially: "လေးစားစွာဖြင့် ဖိတ်ကြားအပ်ပါသည်",
         title_1: "ပျော်ရွှင်ဖွယ် သီတင်းကျွတ်ပွဲတော်",
         title_and: "နှင့်",
-        title_2: "ပျော်ရွှင်ပွဲ (FUN & FAIR)",
+        title_2: "ပျော်ပွဲရွှင်ပွဲ (FUN & FAIR)",
         tap_lamp: "(မီးတောက်လှုပ်ရှားစေရန် ဆီမီးခွက်ကို တို့ထိပါ)",
         month: "အောက်တိုဘာလ",
         day: "သောကြာနေ့",
@@ -96,6 +99,9 @@ const translations = {
         venue: "JEWELS FUTURE INTERNATIONAL SCHOOL VENUE",
         look_forward: "ဤထူးခြားသောနေ့ရက်လေးကို အတူတကွ ပျော်ရွှင်စွာ ဆင်နွှဲကြပါစို့",
         wishes_heading: "✨ သီတင်းကျွတ် ဆုတောင်းစာများ",
+        admin_login_btn: "🔒 Admin Mode ဖွင့်ရန်",
+        admin_logout_btn: "🔓 Admin Mode ပိတ်ရန်",
+        admin_clear_btn: "🗑️ အားလုံးဖျက်မည်",
         write_wish_title: "ဆုတောင်းစာ ရေးသားရန်",
         ph_name: "သင့်နာမည် ရေးပါ",
         ph_wish: "သီတင်းကျွတ် ဆုတောင်းစာ ရေးပေးပါ...",
@@ -122,9 +128,10 @@ document.getElementById('langToggle').addEventListener('click', () => {
             el.placeholder = translations[currentLang][key];
         }
     });
+    updateAdminButtonsText();
 });
 
-// ================= ၇။ GOOGLE SHEET မှ ဆုတောင်းစာများဖတ်ခြင်း၊ ပို့ခြင်းနှင့် ADMIN ဖျက်ခြင်း =================
+// ================= ၇။ GOOGLE SHEET မှ ဆုတောင်းစာများဖတ်ခြင်း၊ Like ပေးခြင်းနှင့် ADMIN ဖျက်ခြင်း =================
 const wishesListEl = document.getElementById('wishes-list');
 const wishForm = document.getElementById('wish-form');
 const adminToggleBtn = document.getElementById('adminToggleBtn');
@@ -139,14 +146,24 @@ const defaultWishes = [
     { id: 'w2', name: 'Aung Aung', message: 'Happy Thadingyut to all teachers and friends! See you at the Fun & Fair!', likes: 8 }
 ];
 
+function updateAdminButtonsText() {
+    if (!adminToggleBtn) return;
+    if (isAdmin) {
+        adminToggleBtn.textContent = translations[currentLang].admin_logout_btn;
+        if (clearAllWishesBtn) clearAllWishesBtn.classList.remove('hidden');
+    } else {
+        adminToggleBtn.textContent = translations[currentLang].admin_login_btn;
+        if (clearAllWishesBtn) clearAllWishesBtn.classList.add('hidden');
+    }
+}
+
 if (adminToggleBtn) {
     adminToggleBtn.addEventListener('click', () => {
         if (!isAdmin) {
             const key = prompt("Admin Security Key ရိုက်ထည့်ပါ:");
             if (key === ADMIN_KEY) {
                 isAdmin = true;
-                adminToggleBtn.textContent = "🔓 Exit Admin";
-                if (clearAllWishesBtn) clearAllWishesBtn.classList.remove('hidden');
+                updateAdminButtonsText();
                 renderWishes(currentWishesData);
                 alert("✅ Admin Mode ပွင့်သွားပါပြီ။");
             } else if (key !== null) {
@@ -154,8 +171,7 @@ if (adminToggleBtn) {
             }
         } else {
             isAdmin = false;
-            adminToggleBtn.textContent = "🔒 Admin Mode";
-            if (clearAllWishesBtn) clearAllWishesBtn.classList.add('hidden');
+            updateAdminButtonsText();
             renderWishes(currentWishesData);
         }
     });
@@ -190,19 +206,30 @@ function renderWishes(wishesArray) {
                 <p>${escapeHtml(item.message)}</p>
             </div>
             <div class="wish-actions">
-                <button class="like-btn" data-id="${item.id}">
+                <button class="like-btn" data-name="${escapeHtml(item.name)}" data-wish="${escapeHtml(item.message)}">
                     ❤️ <span>${item.likes || 0}</span>
                 </button>
                 ${isAdmin ? `<button class="delete-wish-btn" data-name="${escapeHtml(item.name)}" data-wish="${escapeHtml(item.message)}">🗑️ ဖျက်မည်</button>` : ''}
             </div>
         `;
-        div.querySelector('.like-btn').addEventListener('click', () => handleLike(item.id));
+        
+        div.querySelector('.like-btn').addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            const name = btn.getAttribute('data-name');
+            const wish = btn.getAttribute('data-wish');
+            handleLike(name, wish);
+        });
+
         if (isAdmin) {
-            div.querySelector('.delete-wish-btn').addEventListener('click', (e) => {
-                const name = e.target.getAttribute('data-name');
-                const wish = e.target.getAttribute('data-wish');
-                handleDelete(name, wish);
-            });
+            const delBtn = div.querySelector('.delete-wish-btn');
+            if (delBtn) {
+                delBtn.addEventListener('click', (e) => {
+                    const btn = e.currentTarget;
+                    const name = btn.getAttribute('data-name');
+                    const wish = btn.getAttribute('data-wish');
+                    handleDelete(name, wish);
+                });
+            }
         }
         wishesListEl.prepend(div);
     });
@@ -220,7 +247,7 @@ wishForm.addEventListener('submit', async (e) => {
 
     const formData = new FormData();
     formData.append('Name', name);
-    formData.append('Wish', message); // Sheet ၏ Column B (Wish) နှင့် ကိုက်ညီစေရန်
+    formData.append('Wish', message);
 
     try {
         await fetch(GOOGLE_SHEET_WEBAPP_URL, {
@@ -236,11 +263,21 @@ wishForm.addEventListener('submit', async (e) => {
     }
 });
 
-function handleLike(id) {
-    const target = currentWishesData.find(w => w.id === id);
-    if (target) {
-        target.likes = (target.likes || 0) + 1;
-        renderWishes(currentWishesData);
+async function handleLike(name, wish) {
+    const formData = new FormData();
+    formData.append('action', 'likeWish');
+    formData.append('name', name);
+    formData.append('wish', wish);
+
+    try {
+        await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors'
+        });
+        setTimeout(fetchWishes, 1200);
+    } catch (err) {
+        console.error("Like error:", err);
     }
 }
 
