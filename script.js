@@ -1,37 +1,5 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onValue, runTransaction, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-// =========================================================================
-// ၁။ GOOGLE SHEET (Register) ချိတ်ဆက်ရန် URL (ထည့်သွင်းပြီးသား)
-// =========================================================================
-const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyrFEB8v0ULpWiAINJhXsJF2qLm9BgB7VBMJoRmSCA2l-iS7Bc4O2gZIbJWWFSI0AO8/exec";
-
-// =========================================================================
-// ၂။ REAL-TIME ဆုတောင်းစာအတွက် FIREBASE CONFIG
-// =========================================================================
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
-
-let db = null;
-let wishesRef = null;
-const isFirebaseConfigured = !firebaseConfig.databaseURL.includes("YOUR_PROJECT");
-
-if (isFirebaseConfigured) {
-    try {
-        const app = initializeApp(firebaseConfig);
-        db = getDatabase(app);
-        wishesRef = ref(db, 'thadingyut_wishes');
-    } catch (err) {
-        console.warn("Firebase ချိတ်ဆက်မှု မရှိသေးပါ၊ Local Real-time စနစ်ဖြင့် အလုပ်လုပ်နေပါသည်။");
-    }
-}
+// ================= GOOGLE SHEET WEB APP URL =================
+const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzHUiTkVAwBXE7w9krTg-zqVTff1uqzO3mOpxDhXq_quOCOpFTDGIxCfDrpGIFF3jSufw/exec";
 
 // ================= ၃။ အဖွင့် စာအိတ် (ENVELOPE) ဖွင့်ခြင်း =================
 const envelopeWrapper = document.getElementById('envelopeWrapper');
@@ -118,7 +86,7 @@ const translations = {
         cordially: "လေးစားစွာဖြင့် ဖိတ်ကြားအပ်ပါသည်",
         title_1: "ပျော်ရွှင်ဖွယ် သီတင်းကျွတ်ပွဲတော်",
         title_and: "နှင့်",
-        title_2: "ပျော်ပွဲရွှင်ပွဲ (FUN & FAIR)",
+        title_2: "ပျော်ရွှင်ပွဲ (FUN & FAIR)",
         tap_lamp: "(မီးတောက်လှုပ်ရှားစေရန် ဆီမီးခွက်ကို တို့ထိပါ)",
         month: "အောက်တိုဘာလ",
         day: "သောကြာနေ့",
@@ -156,7 +124,7 @@ document.getElementById('langToggle').addEventListener('click', () => {
     });
 });
 
-// ================= ၇။ REAL-TIME ဆုတောင်းစာ၊ LIKE နှင့် ADMIN ဖျက်သည့်စနစ် =================
+// ================= ၇။ GOOGLE SHEET မှ ဆုတောင်းစာများဖတ်ခြင်း၊ ပို့ခြင်းနှင့် ADMIN ဖျက်ခြင်း =================
 const wishesListEl = document.getElementById('wishes-list');
 const wishForm = document.getElementById('wish-form');
 const adminToggleBtn = document.getElementById('adminToggleBtn');
@@ -164,7 +132,7 @@ const clearAllWishesBtn = document.getElementById('clearAllWishesBtn');
 
 const ADMIN_KEY = "sirhtetishandsome";
 let isAdmin = false;
-let currentRenderedWishes = [];
+let currentWishesData = [];
 
 const defaultWishes = [
     { id: 'w1', name: 'Tr. May', message: 'သီတင်းကျွတ်အခါသမယမှာ ကျောင်းသား/သူများအားလုံး ပျော်ရွှင်ချမ်းမြေ့ကြပါစေ။', likes: 12 },
@@ -179,7 +147,7 @@ if (adminToggleBtn) {
                 isAdmin = true;
                 adminToggleBtn.textContent = "🔓 Exit Admin";
                 if (clearAllWishesBtn) clearAllWishesBtn.classList.remove('hidden');
-                renderWishes(currentRenderedWishes);
+                renderWishes(currentWishesData);
                 alert("✅ Admin Mode ပွင့်သွားပါပြီ။");
             } else if (key !== null) {
                 alert("❌ Security Key မှားယွင်းနေပါသည်!");
@@ -188,30 +156,30 @@ if (adminToggleBtn) {
             isAdmin = false;
             adminToggleBtn.textContent = "🔒 Admin Mode";
             if (clearAllWishesBtn) clearAllWishesBtn.classList.add('hidden');
-            renderWishes(currentRenderedWishes);
+            renderWishes(currentWishesData);
         }
     });
 }
 
-if (clearAllWishesBtn) {
-    clearAllWishesBtn.addEventListener('click', () => {
-        if (!isAdmin) return;
-        const key = prompt("ဆုတောင်းစာ အားလုံးကို ဖျက်ရန် Security Key ကို ထပ်မံရိုက်ထည့်ပါ:");
-        if (key === ADMIN_KEY) {
-            if (isFirebaseConfigured && wishesRef) {
-                remove(wishesRef);
+function fetchWishes() {
+    fetch(GOOGLE_SHEET_WEBAPP_URL)
+        .then(res => res.json())
+        .then(data => {
+            if (!data || data.length === 0) {
+                renderWishes(defaultWishes);
             } else {
-                localStorage.setItem('thadingyut_wishes', JSON.stringify([]));
-                renderWishes([]);
+                renderWishes(data);
             }
-        } else if (key !== null) {
-            alert("❌ Security Key မှားယွင်းနေပါသည်!");
-        }
-    });
+        })
+        .catch(err => {
+            console.error("Error fetching wishes:", err);
+            renderWishes(defaultWishes);
+        });
 }
+fetchWishes();
 
 function renderWishes(wishesArray) {
-    currentRenderedWishes = wishesArray;
+    currentWishesData = wishesArray;
     wishesListEl.innerHTML = '';
     wishesArray.forEach(item => {
         const div = document.createElement('div');
@@ -225,88 +193,76 @@ function renderWishes(wishesArray) {
                 <button class="like-btn" data-id="${item.id}">
                     ❤️ <span>${item.likes || 0}</span>
                 </button>
-                ${isAdmin ? `<button class="delete-wish-btn" data-id="${item.id}">🗑️ ဖျက်မည်</button>` : ''}
+                ${isAdmin ? `<button class="delete-wish-btn" data-name="${escapeHtml(item.name)}" data-wish="${escapeHtml(item.message)}">🗑️ ဖျက်မည်</button>` : ''}
             </div>
         `;
         div.querySelector('.like-btn').addEventListener('click', () => handleLike(item.id));
         if (isAdmin) {
-            const delBtn = div.querySelector('.delete-wish-btn');
-            if (delBtn) {
-                delBtn.addEventListener('click', () => handleDelete(item.id));
-            }
+            div.querySelector('.delete-wish-btn').addEventListener('click', (e) => {
+                const name = e.target.getAttribute('data-name');
+                const wish = e.target.getAttribute('data-wish');
+                handleDelete(name, wish);
+            });
         }
         wishesListEl.prepend(div);
     });
 }
 
 function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
 
-if (isFirebaseConfigured && wishesRef) {
-    onValue(wishesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) {
-            renderWishes(defaultWishes);
-            return;
-        }
-        const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        renderWishes(list);
-    });
-} else {
-    let localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-    renderWishes(localWishes);
-
-    window.addEventListener('storage', () => {
-        localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-        renderWishes(localWishes);
-    });
-}
-
-wishForm.addEventListener('submit', (e) => {
+wishForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('wishName').value.trim();
     const message = document.getElementById('wishMessage').value.trim();
     if (!name || !message) return;
 
-    if (isFirebaseConfigured && wishesRef) {
-        push(wishesRef, { name, message, likes: 0 });
-    } else {
-        const localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-        localWishes.push({ id: 'w_' + Date.now(), name, message, likes: 0 });
-        localStorage.setItem('thadingyut_wishes', JSON.stringify(localWishes));
-        renderWishes(localWishes);
+    const formData = new FormData();
+    formData.append('Name', name);
+    formData.append('Wish', message); // Sheet ၏ Column B (Wish) နှင့် ကိုက်ညီစေရန်
+
+    try {
+        await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors'
+        });
+        alert("🙏 ဆုတောင်းစာ ပေးပို့ပြီးပါပြီ!");
+        wishForm.reset();
+        setTimeout(fetchWishes, 2000);
+    } catch (err) {
+        alert("❌ ပေးပို့၍ မရပါ၊ ထပ်မံကြိုးစားပါ။");
     }
-    wishForm.reset();
 });
 
 function handleLike(id) {
-    if (isFirebaseConfigured && db) {
-        const itemLikeRef = ref(db, `thadingyut_wishes/${id}/likes`);
-        runTransaction(itemLikeRef, (currentLikes) => (currentLikes || 0) + 1);
-    } else {
-        const localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-        const target = localWishes.find(w => w.id === id);
-        if (target) {
-            target.likes = (target.likes || 0) + 1;
-            localStorage.setItem('thadingyut_wishes', JSON.stringify(localWishes));
-            renderWishes(localWishes);
-        }
+    const target = currentWishesData.find(w => w.id === id);
+    if (target) {
+        target.likes = (target.likes || 0) + 1;
+        renderWishes(currentWishesData);
     }
 }
 
-function handleDelete(id) {
+async function handleDelete(name, wish) {
     if (!isAdmin) return;
     if (!confirm("ဒီဆုတောင်းစာကို ဖျက်မှာ သေချာပါသလား?")) return;
 
-    if (isFirebaseConfigured && db) {
-        const itemRef = ref(db, `thadingyut_wishes/${id}`);
-        remove(itemRef);
-    } else {
-        let localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-        localWishes = localWishes.filter(w => w.id !== id);
-        localStorage.setItem('thadingyut_wishes', JSON.stringify(localWishes));
-        renderWishes(localWishes);
+    const formData = new FormData();
+    formData.append('action', 'deleteWish');
+    formData.append('name', name);
+    formData.append('wish', wish);
+
+    try {
+        await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors'
+        });
+        alert("🗑️ ဆုတောင်းစာ ဖျက်ပြီးပါပြီ!");
+        setTimeout(fetchWishes, 2000);
+    } catch (err) {
+        alert("❌ ဖျက်၍ မရပါ။");
     }
 }
 
