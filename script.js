@@ -2,38 +2,23 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, push, onValue, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 // =========================================================================
-// ၁။ GOOGLE SHEET (Register) ချိတ်ဆက်ရန် URL (ထည့်သွင်းပြီးသား)
+// ၁။ GOOGLE SHEET (Register) WEB APP URL
 // =========================================================================
 const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyrFEB8v0ULpWiAINJhXsJF2qLm9BgB7VBMJoRmSCA2l-iS7Bc4O2gZIbJWWFSI0AO8/exec";
 
 // =========================================================================
-// ၂။ REAL-TIME ဆုတောင်းစာအတွက် FIREBASE CONFIG
+// ၂။ REAL-TIME ဆုတောင်းစာအတွက် FIREBASE CONFIG (thadingyutjfis)
 // =========================================================================
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    databaseURL: "https://thadingyutjfis-default-rtdb.firebaseio.com",
+    projectId: "thadingyutjfis"
 };
 
-let db = null;
-let wishesRef = null;
-const isFirebaseConfigured = !firebaseConfig.databaseURL.includes("YOUR_PROJECT");
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const wishesRef = ref(db, 'thadingyut_wishes');
 
-if (isFirebaseConfigured) {
-    try {
-        const app = initializeApp(firebaseConfig);
-        db = getDatabase(app);
-        wishesRef = ref(db, 'thadingyut_wishes');
-    } catch (err) {
-        console.warn("Firebase ချိတ်ဆက်မှု မရှိသေးပါ၊ Local Real-time စနစ်ဖြင့် အလုပ်လုပ်နေပါသည်။");
-    }
-}
-
-// ================= ၃။ အဖွင့် စာအိတ် (ENVELOPE) ဖွင့်ခြင်း =================
+// ================= ၃။ ENVELOPE OPENING ANIMATION =================
 const envelopeWrapper = document.getElementById('envelopeWrapper');
 const envelope = document.querySelector('.envelope');
 const envelopeScreen = document.getElementById('envelope-screen');
@@ -46,20 +31,38 @@ envelopeWrapper.addEventListener('click', () => {
         setTimeout(() => {
             envelopeScreen.classList.add('hidden');
             mainContent.classList.remove('hidden');
-        }, 700);
-    }, 900);
+        }, 800);
+    }, 1000);
 });
 
-// ================= ၄။ ဆီမီးခွက် (OIL LAMP) ထိလိုက်လျှင် မီးတောက်လှုပ်ရှားခြင်း =================
+// ================= ၄။ INTERACTIVE OIL LAMP WITH HIGH ACTIVE GLOW =================
 const oilLamp = document.getElementById('oilLamp');
 oilLamp.addEventListener('click', () => {
     oilLamp.classList.toggle('active');
 });
 
-// ================= ၅။ LIGHT MODE / DARK MODE နှင့် မီးပုံးပျံများ =================
-const themeToggle = document.getElementById('themeToggle');
+// ================= ၅။ PARTICLES & SKY LANTERNS GENERATOR =================
+const particleContainer = document.getElementById('particle-container');
 const lanternContainer = document.getElementById('lantern-bg-container');
 
+// Sparkles particles
+function createSparkles() {
+    const count = 35;
+    for (let i = 0; i < count; i++) {
+        const spark = document.createElement('div');
+        spark.className = 'spark-particle';
+        spark.style.left = `${Math.random() * 100}vw`;
+        spark.style.top = `${Math.random() * 100}vh`;
+        const size = 2 + Math.random() * 5;
+        spark.style.width = `${size}px`;
+        spark.style.height = `${size}px`;
+        spark.style.animationDuration = `${5 + Math.random() * 7}s`;
+        spark.style.animationDelay = `${Math.random() * 5}s`;
+        particleContainer.appendChild(spark);
+    }
+}
+
+// Thadingyut Floating Lanterns
 function createSkyLanterns() {
     lanternContainer.innerHTML = '';
     const count = 18;
@@ -67,13 +70,17 @@ function createSkyLanterns() {
         const lantern = document.createElement('div');
         lantern.className = 'floating-sky-lantern';
         lantern.style.left = `${Math.random() * 95}vw`;
-        lantern.style.animationDuration = `${8 + Math.random() * 10}s`;
+        lantern.style.animationDuration = `${10 + Math.random() * 10}s`;
         lantern.style.animationDelay = `${Math.random() * 6}s`;
         lanternContainer.appendChild(lantern);
     }
 }
+
+createSparkles();
 createSkyLanterns();
 
+// Light Mode / Dark Mode Toggle
+const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('dark-mode');
     document.body.classList.toggle('light-mode');
@@ -81,7 +88,7 @@ themeToggle.addEventListener('click', () => {
     themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 });
 
-// ================= ၆။ မြန်မာ / အင်္ဂလိပ် ဘာသာစကား ပြောင်းလဲခြင်း =================
+// ================= ၆။ MULTILANGUAGE TRANSLATIONS =================
 let currentLang = 'en';
 const translations = {
     en: {
@@ -156,14 +163,13 @@ document.getElementById('langToggle').addEventListener('click', () => {
     });
 });
 
-// ================= ၇။ REAL-TIME ဆုတောင်းစာနှင့် LIKE REACTION =================
+// ================= ၇။ FIREBASE REAL-TIME WISHES & LIKES =================
 const wishesListEl = document.getElementById('wishes-list');
 const wishForm = document.getElementById('wish-form');
 
-const defaultWishes = [
-    { id: 'w1', name: 'Tr. May', message: 'သီတင်းကျွတ်အခါသမယမှာ ကျောင်းသား/သူများအားလုံး ပျော်ရွှင်ချမ်းမြေ့ကြပါစေ။', likes: 12 },
-    { id: 'w2', name: 'Aung Aung', message: 'Happy Thadingyut to all teachers and friends! See you at the Fun & Fair!', likes: 8 }
-];
+function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
 
 function renderWishes(wishesArray) {
     wishesListEl.innerHTML = '';
@@ -184,63 +190,44 @@ function renderWishes(wishesArray) {
     });
 }
 
-function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
-}
+// Fetch wishes in real-time
+onValue(wishesRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) {
+        push(wishesRef, {
+            name: "Jewels Future International School",
+            message: "သီတင်းကျွတ်အခါသမယမှာ အားလုံးပဲ ပျော်ရွှင်ချမ်းမြေ့ကြပါစေ! Happy Thadingyut!",
+            likes: 1
+        });
+        return;
+    }
+    const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    renderWishes(list);
+});
 
-if (isFirebaseConfigured && wishesRef) {
-    onValue(wishesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) {
-            renderWishes(defaultWishes);
-            return;
-        }
-        const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
-        renderWishes(list);
-    });
-} else {
-    let localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-    renderWishes(localWishes);
-
-    window.addEventListener('storage', () => {
-        localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-        renderWishes(localWishes);
-    });
-}
-
+// Post a wish
 wishForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('wishName').value.trim();
     const message = document.getElementById('wishMessage').value.trim();
     if (!name || !message) return;
 
-    if (isFirebaseConfigured && wishesRef) {
-        push(wishesRef, { name, message, likes: 0 });
-    } else {
-        const localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-        localWishes.push({ id: 'w_' + Date.now(), name, message, likes: 0 });
-        localStorage.setItem('thadingyut_wishes', JSON.stringify(localWishes));
-        renderWishes(localWishes);
-    }
+    push(wishesRef, {
+        name: name,
+        message: message,
+        likes: 0,
+        timestamp: Date.now()
+    });
     wishForm.reset();
 });
 
+// Likes Transaction
 function handleLike(id) {
-    if (isFirebaseConfigured && db) {
-        const itemLikeRef = ref(db, `thadingyut_wishes/${id}/likes`);
-        runTransaction(itemLikeRef, (currentLikes) => (currentLikes || 0) + 1);
-    } else {
-        const localWishes = JSON.parse(localStorage.getItem('thadingyut_wishes')) || defaultWishes;
-        const target = localWishes.find(w => w.id === id);
-        if (target) {
-            target.likes = (target.likes || 0) + 1;
-            localStorage.setItem('thadingyut_wishes', JSON.stringify(localWishes));
-            renderWishes(localWishes);
-        }
-    }
+    const itemLikeRef = ref(db, `thadingyut_wishes/${id}/likes`);
+    runTransaction(itemLikeRef, (currentLikes) => (currentLikes || 0) + 1);
 }
 
-// ================= ၈။ GOOGLE SHEET (Register) သို့ DATA ပို့ခြင်း =================
+// ================= ၈။ GOOGLE SHEET REGISTER =================
 const registerForm = document.getElementById('register-form');
 const regStatus = document.getElementById('regStatus');
 const regSubmitBtn = document.getElementById('regSubmitBtn');
