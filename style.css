@@ -503,7 +503,7 @@ body.dark-mode .kanote-svg {
     opacity: 0.8;
 }
 
-/* ================= နေ့ရက်နှင့် နေရာ (ဖုန်းနှင့် ကွန်ပျူတာအတွက် အသစ်ပြင်ဆင်ချက်) ================= */
+/* ================= နေ့ရက်နှင့် နေရာ (ဘေးချင်းကပ်ရပ် ပုံစံ) ================= */
 .date-section {
     margin: 25px 0;
     text-align: center;
@@ -513,37 +513,35 @@ body.dark-mode .kanote-svg {
     font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 2px;
-    margin-bottom: 10px;
 }
 
 .date-row {
     display: flex;
-    flex-direction: column; /* ဖုန်းစခရင်တွင် အောက်သို့ တစ်လုံးချင်း သပ်သပ်ရပ်ရပ် ဆင်းစေရန် */
+    justify-content: center;
     align-items: center;
     gap: 12px;
     margin: 10px 0;
+    flex-wrap: nowrap; /* ဘယ်တော့မှ အောက်သို့ မဆင်းဘဲ ဘေးချင်းကပ်နေစေရန် */
 }
 
 .day-box, .time-box {
     border-top: 1.5px solid currentColor;
     border-bottom: 1.5px solid currentColor;
-    padding: 6px 20px;
+    padding: 6px 10px;
     font-weight: 700;
-    width: 80%;
-    max-width: 250px;
+    font-size: 0.85rem;
 }
 
 .red-lantern-garland {
-    font-size: 0.8rem;
-    margin-top: 4px;
-    letter-spacing: 2px;
+    font-size: 0.75rem;
+    margin-top: 3px;
+    letter-spacing: 1px;
 }
 
 .date-number {
-    font-size: 3.5rem;
+    font-size: 2.8rem;
     font-weight: 800;
     line-height: 1;
-    margin: 5px 0;
 }
 
 .year-text {
@@ -551,6 +549,22 @@ body.dark-mode .kanote-svg {
     font-weight: 700;
     letter-spacing: 4px;
     margin-top: 5px;
+}
+
+/* ================= ဖုန်းစခရင်ငယ်များအတွက် ဘေးချင်းကပ်ရပ် ဆံ့စေရန် ================= */
+@media (max-width: 520px) {
+    .date-row {
+        gap: 6px; /* ဘေးချင်းကပ် အကွာအဝေးကို အနည်းငယ်ကျဉ်းပေးခြင်း */
+    }
+
+    .day-box, .time-box {
+        padding: 4px 6px;
+        font-size: 0.72rem; /* ဖုန်းတွင် စာသားအနည်းငယ်သေးစေကာ တစ်တန်းတည်းဆံ့စေသည် */
+    }
+
+    .date-number {
+        font-size: 2.3rem; /* ရက်စွဲကိုလည်း ဖုန်းနှင့်ကိုက်ညီအောင် အနည်းငယ်ချုံ့ပေးခြင်း */
+    }
 }
 
 .venue-section {
