@@ -503,31 +503,34 @@ body.dark-mode .kanote-svg {
     opacity: 0.8;
 }
 
-/* ================= နေ့ရက်နှင့် နေရာ ================= */
+/* ================= နေ့ရက်နှင့် နေရာ (ဖုန်းနှင့် ကွန်ပျူတာအတွက် အသစ်ပြင်ဆင်ချက်) ================= */
 .date-section {
     margin: 25px 0;
+    text-align: center;
 }
 
 .month-text {
     font-size: 1.2rem;
     font-weight: 700;
     letter-spacing: 2px;
+    margin-bottom: 10px;
 }
 
 .date-row {
     display: flex;
-    justify-content: center;
+    flex-direction: column; /* ဖုန်းစခရင်တွင် အောက်သို့ တစ်လုံးချင်း သပ်သပ်ရပ်ရပ် ဆင်းစေရန် */
     align-items: center;
-    gap: 15px;
-    margin: 15px 0;
-    flex-wrap: wrap; /* ဖုန်းစခရင်တွင် လိုင်းမကွဲစေရန် */
+    gap: 12px;
+    margin: 10px 0;
 }
 
 .day-box, .time-box {
     border-top: 1.5px solid currentColor;
     border-bottom: 1.5px solid currentColor;
-    padding: 6px 12px;
+    padding: 6px 20px;
     font-weight: 700;
+    width: 80%;
+    max-width: 250px;
 }
 
 .red-lantern-garland {
@@ -537,15 +540,17 @@ body.dark-mode .kanote-svg {
 }
 
 .date-number {
-    font-size: 3.2rem;
+    font-size: 3.5rem;
     font-weight: 800;
     line-height: 1;
+    margin: 5px 0;
 }
 
 .year-text {
     font-size: 1.4rem;
     font-weight: 700;
     letter-spacing: 4px;
+    margin-top: 5px;
 }
 
 .venue-section {
