@@ -3,7 +3,7 @@
 // =========================================================================
 
 // မူလ Register Google Sheet ၏ Web App URL
-const REGISTER_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyrFEB8v0ULpWiAINJhXsJF2qLm9BgB7VBMJoRmSCA2l-iS7Bc4O2gZIbJWWFSI0AO8/exec";
+const REGISTER_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxdNRYjmLVcp3dgQ7YqloWfGBpSBuW-fuTzb2RW3VM7Ia7DRwey-9VcdyOhN234Z_9p/exec";
 
 // အသစ်ဆောက်ထားသော Wish (ဆုတောင်းစာ) Google Sheet ၏ Web App URL
 const WISH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLt4caejciZrTm1btGKHdmIWRLHqCrpHmfiSYwJCDbIMGn0slJhqy1c3b_FS7BHbqVFA/exec";
