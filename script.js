@@ -1,7 +1,15 @@
-// ================= GOOGLE SHEET WEB APP URL =================
-const GOOGLE_SHEET_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLt4caejciZrTm1btGKHdmIWRLHqCrpHmfiSYwJCDbIMGn0slJhqy1c3b_FS7BHbqVFA/exec";
+// =========================================================================
+// ၁။ GOOGLE SHEET URL (၂) ခု (Register အတွက် နှင့် Wish အတွက် သီးသန့်စီ)
+// =========================================================================
 
-// ================= ၃။ အဖွင့် စာအိတ် (ENVELOPE) ဖွင့်ခြင်း =================
+// မူလ Register Google Sheet ၏ Web App URL
+const REGISTER_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyrFEB8v0ULpWiAINJhXsJF2qLm9BgB7VBMJoRmSCA2l-iS7Bc4O2gZIbJWWFSI0AO8/exec";
+
+// အသစ်ဆောက်ထားသော Wish (ဆုတောင်းစာ) Google Sheet ၏ Web App URL
+const WISH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLt4caejciZrTm1btGKHdmIWRLHqCrpHmfiSYwJCDbIMGn0slJhqy1c3b_FS7BHbqVFA/exec";
+
+
+// ================= ၂။ အဖွင့် စာအိတ် (ENVELOPE) ဖွင့်ခြင်း[cite: 3, 8] =================
 const envelopeWrapper = document.getElementById('envelopeWrapper');
 const envelope = document.querySelector('.envelope');
 const envelopeScreen = document.getElementById('envelope-screen');
@@ -18,13 +26,13 @@ envelopeWrapper.addEventListener('click', () => {
     }, 900);
 });
 
-// ================= ၄။ ဆီမီးခွက် (OIL LAMP) ထိလိုက်လျှင် မီးတောက်လှုပ်ရှားခြင်း =================
+// ================= ၃။ ဆီမီးခွက် (OIL LAMP) ထိလိုက်လျှင် မီးတောက်လှုပ်ရှားခြင်း[cite: 3, 8] =================
 const oilLamp = document.getElementById('oilLamp');
 oilLamp.addEventListener('click', () => {
     oilLamp.classList.toggle('active');
 });
 
-// ================= ၅။ LIGHT MODE / DARK MODE နှင့် မီးပုံးပျံများ =================
+// ================= ၄။ LIGHT MODE / DARK MODE နှင့် မီးပုံးပျံများ[cite: 3, 8] =================
 const themeToggle = document.getElementById('themeToggle');
 const lanternContainer = document.getElementById('lantern-bg-container');
 
@@ -49,7 +57,7 @@ themeToggle.addEventListener('click', () => {
     themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 });
 
-// ================= ၆။ မြန်မာ / အင်္ဂလိပ် ဘာသာစကား ပြောင်းလဲခြင်း =================
+// ================= ၅။ မြန်မာ / အင်္ဂလိပ် ဘာသာစကား ပြောင်းလဲခြင်း[cite: 3, 8] =================
 let currentLang = 'en';
 const translations = {
     en: {
@@ -131,7 +139,7 @@ document.getElementById('langToggle').addEventListener('click', () => {
     updateAdminButtonsText();
 });
 
-// ================= ၇။ GOOGLE SHEET မှ ဆုတောင်းစာများဖတ်ခြင်း၊ Like ပေးခြင်းနှင့် ADMIN ဖျက်ခြင်း =================
+// ================= ၆။ WISH GOOGLE SHEET မှ ဆုတောင်းစာဖတ်ခြင်း၊ Like နှင့် Admin Delete =================
 const wishesListEl = document.getElementById('wishes-list');
 const wishForm = document.getElementById('wish-form');
 const adminToggleBtn = document.getElementById('adminToggleBtn');
@@ -178,7 +186,7 @@ if (adminToggleBtn) {
 }
 
 function fetchWishes() {
-    fetch(GOOGLE_SHEET_WEBAPP_URL)
+    fetch(WISH_WEBAPP_URL)
         .then(res => res.json())
         .then(data => {
             if (!data || data.length === 0) {
@@ -217,6 +225,9 @@ function renderWishes(wishesArray) {
             const btn = e.currentTarget;
             const name = btn.getAttribute('data-name');
             const wish = btn.getAttribute('data-wish');
+            // နှိပ်လိုက်သည်နှင့် ချက်ချင်း ၁ တိုးပြမည်
+            const span = btn.querySelector('span');
+            span.textContent = parseInt(span.textContent || 0) + 1;
             handleLike(name, wish);
         });
 
@@ -250,14 +261,14 @@ wishForm.addEventListener('submit', async (e) => {
     formData.append('Wish', message);
 
     try {
-        await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+        await fetch(WISH_WEBAPP_URL, {
             method: 'POST',
             body: formData,
             mode: 'no-cors'
         });
         alert("🙏 ဆုတောင်းစာ ပေးပို့ပြီးပါပြီ!");
         wishForm.reset();
-        setTimeout(fetchWishes, 2000);
+        setTimeout(fetchWishes, 1500);
     } catch (err) {
         alert("❌ ပေးပို့၍ မရပါ၊ ထပ်မံကြိုးစားပါ။");
     }
@@ -270,12 +281,12 @@ async function handleLike(name, wish) {
     formData.append('wish', wish);
 
     try {
-        await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+        await fetch(WISH_WEBAPP_URL, {
             method: 'POST',
             body: formData,
             mode: 'no-cors'
         });
-        setTimeout(fetchWishes, 1200);
+        setTimeout(fetchWishes, 1500);
     } catch (err) {
         console.error("Like error:", err);
     }
@@ -291,19 +302,19 @@ async function handleDelete(name, wish) {
     formData.append('wish', wish);
 
     try {
-        await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+        await fetch(WISH_WEBAPP_URL, {
             method: 'POST',
             body: formData,
             mode: 'no-cors'
         });
         alert("🗑️ ဆုတောင်းစာ ဖျက်ပြီးပါပြီ!");
-        setTimeout(fetchWishes, 2000);
+        setTimeout(fetchWishes, 1500);
     } catch (err) {
         alert("❌ ဖျက်၍ မရပါ။");
     }
 }
 
-// ================= ၈။ GOOGLE SHEET (Register) သို့ DATA ပို့ခြင်း =================
+// ================= ၇။ REGISTER GOOGLE SHEET သို့ DATA ပို့ခြင်း[cite: 3, 8] =================
 const registerForm = document.getElementById('register-form');
 const regStatus = document.getElementById('regStatus');
 const regSubmitBtn = document.getElementById('regSubmitBtn');
@@ -322,7 +333,8 @@ registerForm.addEventListener('submit', async (e) => {
         formData.append('Name', nameVal);
         formData.append('Year', yearVal);
 
-        await fetch(GOOGLE_SHEET_WEBAPP_URL, {
+        // Register အတွက် မူလ REGISTER_WEBAPP_URL သို့ ပို့ပေးမည်
+        await fetch(REGISTER_WEBAPP_URL, {
             method: 'POST',
             body: formData,
             mode: 'no-cors'
