@@ -9,7 +9,7 @@ const REGISTER_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxdNRYjmLVc
 const WISH_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyLt4caejciZrTm1btGKHdmIWRLHqCrpHmfiSYwJCDbIMGn0slJhqy1c3b_FS7BHbqVFA/exec";
 
 
-// ================= ၂။ အဖွင့် စာအိတ် (ENVELOPE) ဖွင့်ခြင်း[cite: 3, 8] =================
+// ================= ၂။ အဖွင့် စာအိတ် (ENVELOPE) ဖွင့်ခြင်း =================
 const envelopeWrapper = document.getElementById('envelopeWrapper');
 const envelope = document.querySelector('.envelope');
 const envelopeScreen = document.getElementById('envelope-screen');
@@ -26,13 +26,13 @@ envelopeWrapper.addEventListener('click', () => {
     }, 900);
 });
 
-// ================= ၃။ ဆီမီးခွက် (OIL LAMP) ထိလိုက်လျှင် မီးတောက်လှုပ်ရှားခြင်း[cite: 3, 8] =================
+// ================= ၃။ ဆီမီးခွက် (OIL LAMP) ထိလိုက်လျှင် မီးတောက်လှုပ်ရှားခြင်း =================
 const oilLamp = document.getElementById('oilLamp');
 oilLamp.addEventListener('click', () => {
     oilLamp.classList.toggle('active');
 });
 
-// ================= ၄။ LIGHT MODE / DARK MODE နှင့် မီးပုံးပျံများ[cite: 3, 8] =================
+// ================= ၄။ LIGHT MODE / DARK MODE နှင့် မီးပုံးပျံများ =================
 const themeToggle = document.getElementById('themeToggle');
 const lanternContainer = document.getElementById('lantern-bg-container');
 
@@ -57,7 +57,7 @@ themeToggle.addEventListener('click', () => {
     themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
 });
 
-// ================= ၅။ မြန်မာ / အင်္ဂလိပ် ဘာသာစကား ပြောင်းလဲခြင်း[cite: 3, 8] =================
+// ================= ၅။ မြန်မာ / အင်္ဂလိပ် ဘာသာစကား ပြောင်းလဲခြင်း =================
 let currentLang = 'en';
 const translations = {
     en: {
@@ -203,6 +203,9 @@ function fetchWishes() {
 fetchWishes();
 
 function renderWishes(wishesArray) {
+    // Like အရေအတွက် အနည်းဆုံးမှ အများဆုံးသို့ စီရန် (prepend သုံးထားသောကြောင့် Like အများဆုံးက အပေါ်ဆုံးရောက်သွားပါမည်)
+    wishesArray.sort((a, b) => (a.likes || 0) - (b.likes || 0));
+
     currentWishesData = wishesArray;
     wishesListEl.innerHTML = '';
     wishesArray.forEach(item => {
@@ -298,6 +301,7 @@ async function handleDelete(name, wish) {
 
     const formData = new FormData();
     formData.append('action', 'deleteWish');
+    formData.append('action', 'deleteWish');
     formData.append('name', name);
     formData.append('wish', wish);
 
@@ -314,7 +318,7 @@ async function handleDelete(name, wish) {
     }
 }
 
-// ================= ၇။ REGISTER GOOGLE SHEET သို့ DATA ပို့ခြင်း[cite: 3, 8] =================
+// ================= ၇။ REGISTER GOOGLE SHEET သို့ DATA ပို့ခြင်း =================
 const registerForm = document.getElementById('register-form');
 const regStatus = document.getElementById('regStatus');
 const regSubmitBtn = document.getElementById('regSubmitBtn');
